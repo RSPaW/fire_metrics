@@ -6,9 +6,9 @@ library(readr)
 library(cli)
 
 
-# Make YSLB stats ---------------------------------------------------------
+# Make TSF stats ----------------------------------------------------------
 
-# years since last burn is synonymous with time since fire
+# Years since last burn is synonymous with time since fire
 
 # Look for reporting region masks
 msk_paths <- fs::dir_ls(here::here("reporting_masks"))

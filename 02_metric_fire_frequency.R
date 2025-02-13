@@ -50,13 +50,9 @@ for(i in seq_along(msk_paths)){
   for(j in 1:todo){
     first <- 1
     last <- j+1
-    # anfms <- terra::rast(anfm[first:last]) |>
-    #   terra::crop(msk, mask = TRUE) |>
-    #   sum()
     anfms <- terra::rast(anfm[first:last]) |>
       terra::crop(msk, mask = TRUE) |>
       terra::app(fun = "sum")
-
     year <- years[j+1]
     cli::cli_alert_info("Doing {year}...")
     out_df <- terra::freq(anfms) |>

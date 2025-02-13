@@ -9,7 +9,7 @@ library(cli)
 ## Distance between all unburnt patches regardless of size using minimum
 # euclidean distance i.e. the reported minimum is the minimum distance from edge
 # of one patch to it's nearest neighbour and the reported maximum is the maximum
-# of the minimums.
+# of those minimums.
 
 
 # Make distance unburnt to unburnt patch stats -----------------------------
