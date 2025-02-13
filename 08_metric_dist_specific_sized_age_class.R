@@ -6,7 +6,10 @@ library(landscapemetrics)
 library(readr)
 library(cli)
 
-
+## Distance between all age class patches of certain size using minimum
+# euclidean distance i.e. the reported minimum is the minimum distance from edge
+# of one patch to it's nearest neighbour and the reported maximum is the maximum
+# of those minimums.
 
 
 # Vegetation age classes for all patches ----------------------------------
@@ -31,7 +34,7 @@ age10 <- c(-Inf, 9, 0,
            9, Inf, 1)
 rcl10 <- matrix(age10, ncol=3, byrow=TRUE)
 
-# # Empty date frame for results
+## Empty date frame for results
 dist_tsf_df <- dplyr::tibble()
 
 for(i in seq_along(msk_paths)){
@@ -47,8 +50,20 @@ for(i in seq_along(msk_paths)){
     year <- years[j]
     cli::cli_alert_info("Doing {year}...")
     ## work on age class 6+
-    # catch for no patches
-    if(terra::minmax(tsfm6)[2] == 1){
+    # catch for no patches or no patches of required size
+    if(is.na(terra::minmax(tsfm6)[2]) | terra::minmax(tsfm6)[2] == 0){
+      out_df6 <- dplyr::tibble(
+        region = reg_name,
+        year = year,
+        age_class = "6+",
+        min_m = NA,
+        max_m = NA,
+        range_m = NA,
+        mean_m = NA,
+        std_m = NA,
+        sum_m = NA,
+        median_m = NA)
+    } else {
       # find patches
       tsfm6_patches <- landscapemetrics::get_patches(tsfm6, class = 1)[[1]][[1]]
       # find area of patches
@@ -64,23 +79,29 @@ for(i in seq_along(msk_paths)){
       }
       # munge metrics
       out_df6 <- suppressMessages(landscapemetrics::get_nearestneighbour(tsfm6_sized[[1]][[1]]) |>
-        dplyr::mutate(region = reg_name,
-                      year = year,
-                      age_class = "6+") |>
-        dplyr::select(-layer) |>
-        dplyr::group_by(region, year, age_class) |>
-        dplyr::summarise(min_m = min(dist, na.rm = TRUE),
-                         max_m = max(dist, na.rm = TRUE),
-                         range_m = max_m - min_m,
-                         mean_m = mean(dist, na.rm = TRUE),
-                         std_m = sd(dist, na.rm = TRUE),
-                         sum_m = sum(dist, na.rm = TRUE),
-                         median_m = median(dist, na.rm = TRUE)))
-    } else {
-      out_df6 <- dplyr::tibble(
+                                    dplyr::mutate(region = reg_name,
+                                                  year = year,
+                                                  age_class = "6+") |>
+                                    dplyr::select(-layer) |>
+                                    dplyr::group_by(region, year, age_class) |>
+                                    dplyr::summarise(min_m = min(dist, na.rm = TRUE),
+                                                     max_m = max(dist, na.rm = TRUE),
+                                                     range_m = max_m - min_m,
+                                                     mean_m = mean(dist, na.rm = TRUE),
+                                                     std_m = sd(dist, na.rm = TRUE),
+                                                     sum_m = sum(dist, na.rm = TRUE),
+                                                     median_m = median(dist, na.rm = TRUE)))
+    }
+    # update results data frame
+    dist_tsf_df <- dplyr::bind_rows(dist_tsf_df, out_df6)
+
+    ## work on age class 10+
+    # catch for no patches or no patches of required size
+    if(is.na(terra::minmax(tsfm10)[2]) | terra::minmax(tsfm10)[2] == 0){
+      out_df10 <- dplyr::tibble(
         region = reg_name,
         year = year,
-        age_class = "6+",
+        age_class = "10+",
         min_m = NA,
         max_m = NA,
         range_m = NA,
@@ -88,14 +109,7 @@ for(i in seq_along(msk_paths)){
         std_m = NA,
         sum_m = NA,
         median_m = NA)
-    }
-
-    # update results data frame
-    dist_tsf_df <- dplyr::bind_rows(dist_tsf_df, out_df6)
-
-    ## work on age class 10+
-
-    if(terra::minmax(tsfm10)[2] == 1){
+    } else {
       # find patches
       tsfm10_patches <- landscapemetrics::get_patches(tsfm10, class = 1)[[1]][[1]]
       # find area of patches
@@ -111,32 +125,19 @@ for(i in seq_along(msk_paths)){
       }
       # munge metrics
       out_df10 <- suppressMessages(landscapemetrics::get_nearestneighbour(tsfm10_sized[[1]][[1]]) |>
-        dplyr::mutate(region = reg_name,
-                      year = year,
-                      age_class = "10+") |>
-        dplyr::select(-layer) |>
-        dplyr::group_by(region, year, age_class) |>
-        dplyr::summarise(min_m = min(dist, na.rm = TRUE),
-                         max_m = max(dist, na.rm = TRUE),
-                         range_m = max_m - min_m,
-                         mean_m = mean(dist, na.rm = TRUE),
-                         std_m = sd(dist, na.rm = TRUE),
-                         sum_m = sum(dist, na.rm = TRUE),
-                         median_m = median(dist, na.rm = TRUE)))
-    } else {
-      out_df10 <- dplyr::tibble(
-        region = reg_name,
-        year = year,
-        age_class = "10+",
-        min_m = NA,
-        max_m = NA,
-        range_m = NA,
-        mean_m = NA,
-        std_m = NA,
-        sum_m = NA,
-        median_m = NA)
+                                     dplyr::mutate(region = reg_name,
+                                                   year = year,
+                                                   age_class = "10+") |>
+                                     dplyr::select(-layer) |>
+                                     dplyr::group_by(region, year, age_class) |>
+                                     dplyr::summarise(min_m = min(dist, na.rm = TRUE),
+                                                      max_m = max(dist, na.rm = TRUE),
+                                                      range_m = max_m - min_m,
+                                                      mean_m = mean(dist, na.rm = TRUE),
+                                                      std_m = sd(dist, na.rm = TRUE),
+                                                      sum_m = sum(dist, na.rm = TRUE),
+                                                      median_m = median(dist, na.rm = TRUE)))
     }
-
     # update results data frame
     dist_tsf_df <- dplyr::bind_rows(dist_tsf_df, out_df10)
 
