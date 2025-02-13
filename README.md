@@ -18,9 +18,10 @@ Current R code that replicates patch, frequency, time since fire, distance and a
 
 ## Scripts:
 
-* `00_preprocess_firescar_vectors_to_raster_base_data.R` - Will do all the pre-processing of the input vectors to raster, handling resolutions, extents etc. It will also produce a number of fundamental annual spatial datasets (tif) that will be used to generate metrics utilising additional scripts. The annual spatial datasets (anf - annual fires, anfm - annual fire masks, yob - annual year of burn, tsf - annual time since fire) are saved to the users workspace. Reporting region vectors are also rasterised.
-
+* `00_preprocess_firescar_vectors_to_raster_base_data.R` - Will do all the pre-processing of the input vectors to raster, handling resolutions, extents etc. It will also produce a number of fundamental annual spatial datasets (tif) that will be used to generate metrics utilising additional scripts. The annual spatial datasets (anf - annual fires, anfm - annual fire masks, yob - annual year of burn, tsf - annual time since fire) are saved to the users workspace. 
 **NOTE** Very large mapped areas can be processed. The pre-processing script will assess the extents of the mapped area and will process in chunks if necessary. If chunks are created the script can also mosaic annual spatial datasets chunks. The mosaicked annual spatial chunks are utilised in the "_metric_" scripts and are also good for visualisation.
+
+* `00a_preprocess_regions_to_masks.R` - Reporting region vectors are rasterised.
 
 * `01-08_metric_....R` - Various scripts that produce stated metrics. They can all be run independently (i.e. there is no inter-dependency so can be run in any order). All metric scripts output a csv file of the stats. to a created directory called `/statistics`
 
