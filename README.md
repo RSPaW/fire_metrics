@@ -5,7 +5,7 @@ Current R code that replicates patch, frequency, time since fire, distance and a
 
 * Use R Studio.
 * Create a new R Project and check out this repo to a local directory on your computer. All scripts will recognise relative file paths if this is adhered to.
-* Run the `00_` script to pre-process data.
+* Run the `00` scripts to pre-process data.
 * Run the `01-08` scripts to generate metrics.
 
 **NOTE** - Processing time varies between scripts but raster processing of this size takes time. All scripts output messages to the console so the user can see progress.
