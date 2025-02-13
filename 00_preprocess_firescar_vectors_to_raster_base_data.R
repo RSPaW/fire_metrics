@@ -30,8 +30,8 @@ user_aoi <- function(aoi_path, name){
 # - makes topology valid
 # - ensures EPSG:3577
 # - checks if AOI spatial extent is too big to process (avoids maxing memory)
-# - if AOI too large then splits into even portions to "tile" inputs, also
-#   writes out "tile" shape files and retains file paths.
+# - if AOI too large then splits into even portions to "chunk" inputs, also
+#   writes out "chunk" shape files and retains file paths.
 aoi_check <- function(aoi, split = FALSE){
   aoi_alb <- aoi[["aoi"]] |> sf::st_make_valid() |> sf::st_transform(3577) |>
     dplyr::summarise()
@@ -68,7 +68,7 @@ aoi_check <- function(aoi, split = FALSE){
 
 }
 
-## Function that splits AOI into smaller "tiles". Is used in above function
+## Function that splits AOI into smaller "chunks". Is used in above function
 split_big_aoi <- function(aoi, n){
   suppressWarnings({
     poly <- aoi
@@ -115,7 +115,7 @@ pname <- "pilbara"
 aoi <- user_aoi(aoi_path = aoi_path, name = pname)
 aoi <- aoi_check(aoi = aoi, split = TRUE)
 
-# Make fire scar data
+## Make fire scar data
 # Make file paths to all fire scar shape files
 fs_path <- scar_path |>  fs::dir_ls(glob = "*.shp")
 
@@ -127,12 +127,12 @@ full_fire_dat <- do.call(what = sf:::rbind.sf, args = scar_list) |>
   sf::st_transform(3577) |>
   dplyr::mutate(year = as.numeric(!!sym(attribute_year))) |>
   terra::vect() |>
-  terra::crop(terra::vect(aoi$aoi)) |>
+  terra::crop(terra::vect(aoi$aoi)) |> # crops to extent
   dplyr::arrange(year) # ensure ordered by year
 
-# Get unique years on full dataset - important as it can be possible that no fires
-# occur in one of the "tiles" and a dummy year may need to be inserted to maintain
-# proper sequence in time series critical metrics i.e. TSF
+# Get unique years on full data set - important as it can be possible that no fires
+# occur in one of the "chunks" and a dummy year may need to be inserted to maintain
+# proper sequence in time series critical metrics i.e. time since fire
 unique_fyrs <- full_fire_dat |>
   tidyterra::pull(var = year) |>
   unique()
@@ -158,7 +158,7 @@ for(poly in aoi[["split"]]){
   # individual burn years ---------------------------------------------------
   cli::cli_alert_info("Annual Burn Year Rasters and Masks")
 
-  # initial data only subset to extent - requires further cropping
+  # initial data subset to full extent - requires further cropping to chunk
   f_vecs <- full_fire_dat |>
     terra::crop(terra::vect(dat$aoi_chunk)) |>
     dplyr::arrange(year)
@@ -195,7 +195,7 @@ for(poly in aoi[["split"]]){
 
   # find non burn years and add an infill blank year
   zero_rst <- template
-  terra::values(zero_rst) <- NaN #0
+  terra::values(zero_rst) <- NaN # not 0
   zero_yr <- zero_rst |>
     terra::crop(aoi_chunk_msk, mask = TRUE)
   template0 <- template
