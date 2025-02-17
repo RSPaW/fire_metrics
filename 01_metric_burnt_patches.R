@@ -43,7 +43,7 @@ for(i in seq_along(msk_paths)){
                          year = year,
                          burnt_ha = sum(area_patches$`1`),
                          unburnt_ha = sum(area_patches$`0`),
-                         proportion = burnt_ha/unburnt_ha,
+                         proportion = burnt_ha/(unburnt_ha + burnt_ha),
                          num_patches = length(area_patches$`1`),
                          mean_ha = mean(area_patches$`1`),
                          min_ha = min(area_patches$`1`),
